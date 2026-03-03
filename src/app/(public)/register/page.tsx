@@ -142,7 +142,7 @@ function RegisterPage() {
                     <SelectContent>
                       <SelectItem value="customer">Customer</SelectItem>
                       <SelectItem value="hotel_owner">Hotel Owner</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
+                      {/* <SelectItem value="admin">Admin</SelectItem> */}
                     </SelectContent>
                   </Select>
                   <FormMessage />
