@@ -44,4 +44,20 @@ export const roomsSortOptions =[
   { value: "created_at_asc", label: "Oldest" },
 ]  
 
+export const stocktypes = [
+  { value: "technology", label: "Technology" },
+  { value: "finance", label: "Finance" },
+  { value: "healthcare", label: "Healthcare" },
+  { value: "energy", label: "Energy" },
+  { value: "consumer_goods", label: "Consumer Goods" },
+  { value: "utilities", label: "Utilities" },
+  { value: "real_estate", label: "Real Estate" },
+  { value: "materials", label: "Materials" },
+  { value: "industrials", label: "Industrials" },
+  { value: "telecommunications", label: "Telecommunications" },
+  { value: "transportation", label: "Transportation" },
+  { value: "entertainment", label: "Entertainment" },
+  { value: "other", label: "Other" },    
+]
+
 

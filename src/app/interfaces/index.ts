@@ -71,8 +71,10 @@ export interface IStock {
 	id: number
 	created_at: string
 	stockcode: string
+	stocktype?: string
 	name: string
 	description: string
 	price: number
 	date: string
 }
+

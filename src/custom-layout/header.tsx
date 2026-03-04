@@ -29,11 +29,10 @@ type RoleMenuItem = {
 const MENU_BY_ROLE: Record<UserRole, RoleMenuItem[]> = {
   admin: [
     { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/admin/hotels", label: "Hotels", icon: Building2 },
+    { href: "/admin/trader", label: "Trader", icon: Settings },
     { href: "/admin/users", label: "Users", icon: UserRound },
     { href: "/admin/profile", label: "Profile", icon: UserRound },
     { href: "/admin/setting", label: "Setting", icon: Settings },
-    { href: "/admin/trader", label: "Trader", icon: Settings },
   ],
   hotel_owner: [
     {
@@ -78,16 +77,16 @@ function Header() {
   }, [loggedInUser?.role])
 
   return (
-    <div className='flex justify-between items-center bg-gray-800 text-white px-7 py-6'>
-        <h1 className='text-2xl font-bold'>Hotel Booking App</h1>
+    <div className='flex items-center justify-between bg-primary px-7 py-6 text-primary-foreground'>
+        <h1 className='text-2xl font-bold'>Stock Trader App</h1>
         <div className='flex gap-5 items-center'>
-            <h1 className='text-m text-white text-sm'>
+            <h1 className='text-m text-sm text-primary-foreground'>
                 {loggedInUser ? `Welcome, ${loggedInUser.name} (${loggedInUser.role})`
                  : 'Not logged in'}
             </h1>
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white hover:text-white">
+                <Button variant="ghost" size="icon" className="text-primary-foreground hover:text-primary-foreground">
                   <Menu size={14} className='w-6 h-6 cursor-pointer text-sm' />
                 </Button>
               </SheetTrigger>

@@ -9,13 +9,16 @@ import toast from "react-hot-toast"
 
 import type { IStock } from "@/app/interfaces"
 import { createStock, editStockById } from "@/actions/stocks"
+import { stocktypes } from "@/app/constants"
 
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const stockFormSchema = z.object({
   stockcode: z.string().min(1, "Stock code is required"),
+  stocktype: z.string().min(1, "Stock type is required"),
   name: z.string().min(2, "Name is required"),
   description: z.string().min(1, "Description is required"),
   price: z.number().min(0, "Price must be 0 or greater"),
@@ -33,14 +36,19 @@ function StockForm({ formType, stockData }: StockFormProps) {
   const router = useRouter()
 
   const initialValues = useMemo<StockFormValues>(
-    () => ({
-      stockcode: stockData?.stockcode ?? "",
-      name: stockData?.name ?? "",
-      description: stockData?.description ?? "",
-      price: stockData?.price ?? 0,
-      date: stockData?.date ?? "",
-    }),
-    [stockData]
+    () => {
+      const todayDate = new Date().toISOString().split("T")[0]
+
+      return {
+        stockcode: stockData?.stockcode ?? "",
+        stocktype: stockData?.stocktype ?? "",
+        name: stockData?.name ?? "",
+        description: stockData?.description ?? "",
+        price: stockData?.price ?? 0,
+        date: stockData?.date ?? (formType === "add" ? todayDate : ""),
+      }
+    },
+    [stockData, formType]
   )
 
   const form = useForm<StockFormValues>({
@@ -85,6 +93,10 @@ function StockForm({ formType, stockData }: StockFormProps) {
     }
   }
 
+  const handleCancel = () => {
+    router.push('/admin/trader')
+  }
+
   return (
     <section className="rounded-lg border border-border bg-card p-4 shadow-sm sm:p-6">
       <Form {...form}>
@@ -113,6 +125,31 @@ function StockForm({ formType, stockData }: StockFormProps) {
                   <FormControl>
                     <Input placeholder="Apple Inc" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="stocktype"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Stock Type</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select stock type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {stocktypes.map((stockType) => (
+                        <SelectItem key={stockType.value} value={stockType.value}>
+                          {stockType.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -170,7 +207,10 @@ function StockForm({ formType, stockData }: StockFormProps) {
             />
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={handleCancel}>
+              Cancel
+            </Button>
             <Button type="submit">
               {formType === "edit" ? "Update Stock" : "Create Stock"}
             </Button>

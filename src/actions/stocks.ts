@@ -3,22 +3,39 @@
 import { IStock } from './../app/interfaces/index'
 import supabaseConfig from '@/app/config/supabse-config'
 
+const isMissingStockTypeColumnError = (message?: string) => {
+  return (message || '').toLowerCase().includes("could not find the 'stocktype' column")
+}
+
+const isMissingStockTypesColumnError = (message?: string) => {
+  return (message || '').toLowerCase().includes("could not find the 'stocktypes' column")
+}
+
+const normalizeStock = (stock: any): IStock => {
+  return {
+    ...stock,
+    stocktype: stock?.stocktype ?? stock?.stocktypes ?? '',
+  }
+}
+
 export const createStock = async (payload: Partial<IStock>) => {
   try {
     const stockcode = payload.stockcode?.trim()
+    const stocktype = payload.stocktype?.trim()
     const name = payload.name?.trim()
     const description = payload.description?.trim()
     const price = Number(payload.price)
     const date = payload.date?.trim()
 
-    if (!stockcode || !name || !description || Number.isNaN(price) || !date) {
-      throw new Error('Stock code, name, description, price and date are required')
+    if (!stockcode || !stocktype || !name || !description || Number.isNaN(price) || !date) {
+      throw new Error('Stock code, stock type, name, description, price and date are required')
     }
 
-    const { data, error } = await supabaseConfig
+    let { data, error } = await supabaseConfig
       .from('stocks')
       .insert({
         stockcode,
+        stocktype,
         name,
         description,
         price,
@@ -27,6 +44,41 @@ export const createStock = async (payload: Partial<IStock>) => {
       .select('*')
       .single()
 
+    if (error && isMissingStockTypeColumnError(error.message)) {
+      const fallbackResultWithStockTypes = await supabaseConfig
+        .from('stocks')
+        .insert({
+          stockcode,
+          stocktypes: stocktype,
+          name,
+          description,
+          price,
+          date,
+        })
+        .select('*')
+        .single()
+
+      data = fallbackResultWithStockTypes.data
+      error = fallbackResultWithStockTypes.error
+
+      if (error && isMissingStockTypesColumnError(error.message)) {
+        const fallbackResult = await supabaseConfig
+          .from('stocks')
+          .insert({
+            stockcode,
+            name,
+            description,
+            price,
+            date,
+          })
+          .select('*')
+          .single()
+
+        data = fallbackResult.data
+        error = fallbackResult.error
+      }
+    }
+
     if (error) {
       throw new Error(error.message)
     }
@@ -34,7 +86,7 @@ export const createStock = async (payload: Partial<IStock>) => {
     return {
       success: true,
       message: 'Stock created successfully',
-      stock: data,
+      stock: normalizeStock(data),
     }
   } catch (error: any) {
     return {
@@ -53,6 +105,7 @@ export const editStockById = async (id: number, payload: Partial<IStock>) => {
     const updatePayload: Partial<IStock> = {}
 
     if (payload.stockcode !== undefined) updatePayload.stockcode = payload.stockcode.trim()
+    if (payload.stocktype !== undefined) updatePayload.stocktype = payload.stocktype.trim()
     if (payload.name !== undefined) updatePayload.name = payload.name.trim()
     if (payload.description !== undefined) updatePayload.description = payload.description.trim()
     if (payload.price !== undefined) {
@@ -68,12 +121,43 @@ export const editStockById = async (id: number, payload: Partial<IStock>) => {
       throw new Error('At least one field is required to update stock')
     }
 
-    const { data, error } = await supabaseConfig
+    let { data, error } = await supabaseConfig
       .from('stocks')
       .update(updatePayload)
       .eq('id', id)
       .select('*')
       .maybeSingle()
+
+    if (error && isMissingStockTypeColumnError(error.message)) {
+      const { stocktype, ...fallbackPayload } = updatePayload
+
+      let fallbackPayloadWithStockTypes: Record<string, any> = { ...fallbackPayload }
+      if (stocktype !== undefined) {
+        fallbackPayloadWithStockTypes.stocktypes = stocktype
+      }
+
+      const fallbackResultWithStockTypes = await supabaseConfig
+        .from('stocks')
+        .update(fallbackPayloadWithStockTypes)
+        .eq('id', id)
+        .select('*')
+        .maybeSingle()
+
+      data = fallbackResultWithStockTypes.data
+      error = fallbackResultWithStockTypes.error
+
+      if (error && isMissingStockTypesColumnError(error.message)) {
+        const fallbackResult = await supabaseConfig
+          .from('stocks')
+          .update(fallbackPayload)
+          .eq('id', id)
+          .select('*')
+          .maybeSingle()
+
+        data = fallbackResult.data
+        error = fallbackResult.error
+      }
+    }
 
     if (error) {
       throw new Error(error.message)
@@ -86,7 +170,7 @@ export const editStockById = async (id: number, payload: Partial<IStock>) => {
     return {
       success: true,
       message: 'Stock updated successfully',
-      stock: data,
+      stock: normalizeStock(data),
     }
   } catch (error: any) {
     return {
@@ -119,7 +203,7 @@ export const getStockById = async (id: number) => {
     return {
       success: true,
       message: 'Stock fetched successfully',
-      stock: data,
+      stock: normalizeStock(data),
     }
   } catch (error: any) {
     return {
@@ -177,7 +261,7 @@ export const getAllStocks = async () => {
     return {
       success: true,
       message: 'Stocks fetched successfully',
-      stocks: data,
+      stocks: (data || []).map(normalizeStock),
     }
   } catch (error: any) {
     return {
