@@ -30,24 +30,27 @@ const MENU_BY_ROLE: Record<UserRole, RoleMenuItem[]> = {
   admin: [
     { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/hotels", label: "Hotels", icon: Building2 },
-    { href: "/admin/users", label: "Users", icon: UserRound },   
+    { href: "/admin/users", label: "Users", icon: UserRound },
     { href: "/admin/profile", label: "Profile", icon: UserRound },
     { href: "/admin/setting", label: "Setting", icon: Settings },
+    { href: "/admin/trader", label: "Trader", icon: Settings },
   ],
   hotel_owner: [
-    { href: "/hotel_owner/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    {
+      href: "/hotel_owner/dashboard",
+      label: "Dashboard",
+      icon: LayoutDashboard,
+    },
     { href: "/hotel_owner/hotels", label: "Hotels", icon: Building2 },
     { href: "/hotel_owner/rooms", label: "Rooms", icon: BedDouble },
     { href: "/hotel_owner/bookings", label: "Bookings", icon: CalendarDays },
     { href: "/hotel_owner/profile", label: "Profile", icon: UserRound },
-   
   ],
   customer: [
     { href: "/customer/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/customer/book-room", label: "Book a Room", icon: Building2 },
     { href: "/customer/bookings", label: "Bookings", icon: CalendarDays },
     { href: "/customer/profile", label: "Profile", icon: UserRound },
-    
   ],
 };
 

@@ -66,3 +66,13 @@ export interface IBooking {
 	owner?: IUser
 	customer?: IUser
 }
+
+export interface IStock {
+	id: number
+	created_at: string
+	stockcode: string
+	name: string
+	description: string
+	price: number
+	date: string
+}
