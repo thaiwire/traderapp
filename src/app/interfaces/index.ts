@@ -78,3 +78,12 @@ export interface IStock {
 	date: string
 }
 
+export interface IMonitor {
+	id: number
+	created_at: string
+	stockcode: string	
+	price_below: number
+	price_top: number
+	monitor_type: 'quick' | 'slow'
+	status: string
+}

@@ -30,6 +30,7 @@ const MENU_BY_ROLE: Record<UserRole, RoleMenuItem[]> = {
   admin: [
     { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/trader", label: "Trader", icon: Settings },
+    { href: "/admin/stockmonitor", label: "Stock Monitor", icon: Settings },
     { href: "/admin/users", label: "Users", icon: UserRound },
     { href: "/admin/profile", label: "Profile", icon: UserRound },
     { href: "/admin/setting", label: "Setting", icon: Settings },
