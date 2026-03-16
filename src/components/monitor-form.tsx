@@ -17,7 +17,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const monitorFormSchema = z
   .object({
-    stockcode: z.string().min(1, "Stock code is required"),
+    stockcode: z.string().min(1, "Stock code is required")
+    .uppercase("Stock code must be uppercase")
+    ,    
     price_below: z.number().min(0, "Price below must be 0 or greater"),
     price_top: z.number().min(0, "Price top must be 0 or greater"),
     monitor_type: z.enum(["quick", "slow"], { message: "Monitor type is required" }),

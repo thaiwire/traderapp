@@ -2,6 +2,7 @@
 
 import type { IMonitor } from '@/app/interfaces'
 import supabaseConfig from '@/app/config/supabse-config'
+import { table } from 'console'
 
 const MONITOR_TABLE_CANDIDATES = ['monitors', 'monitor', 'stock_monitors', 'stockmonitor'] as const
 
@@ -62,6 +63,9 @@ export const createMonitor = async (payload: Partial<IMonitor>) => {
         "Stock code, price below, price top, monitor type and status are required",
       );
     }
+    
+    
+
     const duplicateCheck = await tryWithMonitorTables<{ id: number }[]>((tableName) =>
       supabaseConfig
         .from(tableName)
@@ -69,6 +73,7 @@ export const createMonitor = async (payload: Partial<IMonitor>) => {
         .ilike('stockcode', stockcode)
         .limit(1),
     );
+   
 
     if (duplicateCheck.error) {
       throw new Error(
