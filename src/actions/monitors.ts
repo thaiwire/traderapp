@@ -45,15 +45,43 @@ const tryWithMonitorTables = async <T>(
 
 export const createMonitor = async (payload: Partial<IMonitor>) => {
   try {
-    const stockcode = payload.stockcode?.trim()
-    const price_below = Number(payload.price_below)
-    const price_top = Number(payload.price_top)
-    const monitor_type = payload.monitor_type
-    const status = payload.status?.trim()
+    const stockcode = payload.stockcode?.trim();
+    const price_below = Number(payload.price_below);
+    const price_top = Number(payload.price_top);
+    const monitor_type = payload.monitor_type;
+    const status = payload.status?.trim();
 
-    if (!stockcode || Number.isNaN(price_below) || Number.isNaN(price_top) || !monitor_type || !status) {
-      throw new Error('Stock code, price below, price top, monitor type and status are required')
+    if (
+      !stockcode ||
+      Number.isNaN(price_below) ||
+      Number.isNaN(price_top) ||
+      !monitor_type ||
+      !status
+    ) {
+      throw new Error(
+        "Stock code, price below, price top, monitor type and status are required",
+      );
     }
+    const duplicateCheck = await tryWithMonitorTables<{ id: number }[]>((tableName) =>
+      supabaseConfig
+        .from(tableName)
+        .select('id')
+        .ilike('stockcode', stockcode)
+        .limit(1),
+    );
+
+    if (duplicateCheck.error) {
+      throw new Error(
+        isMissingTableError(duplicateCheck.error.message)
+          ? getMissingTableMessage()
+          : duplicateCheck.error.message,
+      );
+    }
+
+    if (duplicateCheck.data && duplicateCheck.data.length > 0) {
+      throw new Error('Stock code already exists');
+    }
+
 
     const { data, error } = await tryWithMonitorTables((tableName) =>
       supabaseConfig
@@ -65,19 +93,23 @@ export const createMonitor = async (payload: Partial<IMonitor>) => {
           monitor_type,
           status,
         })
-        .select('*')
-        .single()
-    )
+        .select("*")
+        .single(),
+    );
 
     if (error) {
-      throw new Error(isMissingTableError(error.message) ? getMissingTableMessage() : error.message)
+      throw new Error(
+        isMissingTableError(error.message)
+          ? getMissingTableMessage()
+          : error.message,
+      );
     }
 
     return {
       success: true,
-      message: 'Monitor created successfully',
+      message: "Monitor created successfully",
       monitor: data as IMonitor,
-    }
+    };
   } catch (error: any) {
     return {
       success: false,
@@ -94,7 +126,13 @@ export const editMonitorById = async (id: number, payload: Partial<IMonitor>) =>
 
     const updatePayload: Partial<IMonitor> = {}
 
-    if (payload.stockcode !== undefined) updatePayload.stockcode = payload.stockcode.trim()
+    if (payload.stockcode !== undefined) {
+      const normalizedStockcode = payload.stockcode.trim()
+      if (!normalizedStockcode) {
+        throw new Error('Stock code is required')
+      }
+      updatePayload.stockcode = normalizedStockcode
+    }
     if (payload.price_below !== undefined) {
       const parsedPriceBelow = Number(payload.price_below)
       if (Number.isNaN(parsedPriceBelow)) {
@@ -114,6 +152,25 @@ export const editMonitorById = async (id: number, payload: Partial<IMonitor>) =>
 
     if (Object.keys(updatePayload).length === 0) {
       throw new Error('At least one field is required to update monitor')
+    }
+
+    if (updatePayload.stockcode !== undefined) {
+      const duplicateCheck = await tryWithMonitorTables<{ id: number }[]>((tableName) =>
+        supabaseConfig
+          .from(tableName)
+          .select('id')
+          .ilike('stockcode', updatePayload.stockcode as string)
+          .neq('id', id)
+          .limit(1)
+      )
+
+      if (duplicateCheck.error) {
+        throw new Error(isMissingTableError(duplicateCheck.error.message) ? getMissingTableMessage() : duplicateCheck.error.message)
+      }
+
+      if (duplicateCheck.data && duplicateCheck.data.length > 0) {
+        throw new Error('Stock code already exists')
+      }
     }
 
     const { data, error } = await tryWithMonitorTables((tableName) =>
