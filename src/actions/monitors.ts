@@ -2,9 +2,9 @@
 
 import type { IMonitor } from '@/app/interfaces'
 import supabaseConfig from '@/app/config/supabse-config'
-import { table } from 'console'
 
 const MONITOR_TABLE_CANDIDATES = ['monitors', 'monitor', 'stock_monitors', 'stockmonitor'] as const
+const STOCKCODE_PATTERN = /^[A-Z0-9._-]+$/
 
 const isMissingTableError = (message?: string) => {
   const normalizedMessage = (message || '').toLowerCase()
@@ -46,7 +46,7 @@ const tryWithMonitorTables = async <T>(
 
 export const createMonitor = async (payload: Partial<IMonitor>) => {
   try {
-    const stockcode = payload.stockcode?.trim();
+    const stockcode = payload.stockcode?.trim().toUpperCase();
     const price_below = Number(payload.price_below);
     const price_top = Number(payload.price_top);
     const monitor_type = payload.monitor_type;
@@ -62,6 +62,10 @@ export const createMonitor = async (payload: Partial<IMonitor>) => {
       throw new Error(
         "Stock code, price below, price top, monitor type and status are required",
       );
+    }
+
+    if (!STOCKCODE_PATTERN.test(stockcode)) {
+      throw new Error('Stock code must contain uppercase letters only')
     }
     
     
@@ -132,9 +136,12 @@ export const editMonitorById = async (id: number, payload: Partial<IMonitor>) =>
     const updatePayload: Partial<IMonitor> = {}
 
     if (payload.stockcode !== undefined) {
-      const normalizedStockcode = payload.stockcode.trim()
+      const normalizedStockcode = payload.stockcode.trim().toUpperCase()
       if (!normalizedStockcode) {
         throw new Error('Stock code is required')
+      }
+      if (!STOCKCODE_PATTERN.test(normalizedStockcode)) {
+        throw new Error('Stock code must contain uppercase letters only')
       }
       updatePayload.stockcode = normalizedStockcode
     }

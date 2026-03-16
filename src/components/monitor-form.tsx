@@ -17,9 +17,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const monitorFormSchema = z
   .object({
-    stockcode: z.string().min(1, "Stock code is required")
-    .uppercase("Stock code must be uppercase")
-    ,    
+    stockcode: z
+      .string()
+      .trim()
+      .min(1, "Stock code is required")
+      .regex(/^[A-Z0-9._-]+$/, "Stock code must be uppercase"),
     price_below: z.number().min(0, "Price below must be 0 or greater"),
     price_top: z.number().min(0, "Price top must be 0 or greater"),
     monitor_type: z.enum(["quick", "slow"], { message: "Monitor type is required" }),
@@ -42,7 +44,7 @@ function MonitorForm({ formType, monitorData }: MonitorFormProps) {
 
   const initialValues = useMemo<MonitorFormValues>(() => {
     return {
-      stockcode: monitorData?.stockcode ?? "",
+      stockcode: monitorData?.stockcode?.toUpperCase() ?? "",
       price_below: monitorData?.price_below ?? 0,
       price_top: monitorData?.price_top ?? 0,
       monitor_type: monitorData?.monitor_type ?? "quick",
@@ -108,7 +110,12 @@ function MonitorForm({ formType, monitorData }: MonitorFormProps) {
                 <FormItem>
                   <FormLabel>Stock Code</FormLabel>
                   <FormControl>
-                    <Input placeholder="AAPL" {...field} />
+                    <Input
+                      placeholder="AAPL"
+                      {...field}
+                      value={field.value}
+                      onChange={(event) => field.onChange(event.target.value.toUpperCase())}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
